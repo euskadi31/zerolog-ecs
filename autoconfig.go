@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	zerolog.TimeFieldFormat = time.RFC3339
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 	zerolog.TimestampFieldName = "@timestamp"
 	zerolog.LevelFieldName = "log.level"
 	zerolog.MessageFieldName = "message"
@@ -38,7 +38,7 @@ func init() {
 		Str("process.executable", os.Args[0]).
 		Int("process.pid", os.Getpid()).
 		Int("process.ppid", os.Getppid()).
-		Str("process.start", zerolog.TimestampFunc().Format(time.RFC3339)).
+		Str("process.start", zerolog.TimestampFunc().Format(time.RFC3339Nano)).
 		Str("os.platform", runtime.GOOS)
 
 	if hostname, err := os.Hostname(); err == nil {
