@@ -28,14 +28,6 @@ func init() {
 	zerolog.CallerFieldName = "log.origin.function"
 	zerolog.ErrorStackFieldName = "error.stack_trace"
 
-	zerolog.LevelTraceValue = "TRACE"
-	zerolog.LevelDebugValue = "DEBUG"
-	zerolog.LevelInfoValue = "INFO"
-	zerolog.LevelWarnValue = "WARN"
-	zerolog.LevelErrorValue = "ERROR"
-	zerolog.LevelFatalValue = "FATAL"
-	zerolog.LevelPanicValue = "PANIC"
-
 	zerolog.TimestampFunc = func() time.Time {
 		return time.Now().UTC()
 	}
