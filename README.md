@@ -9,11 +9,14 @@ package main
 
 import (
     "github.com/rs/zerolog/log"
-    _ "github.com/euskadi31/zerolog-ecs"
-    _ "github.com/euskadi31/zerolog-ecs/feature/aws"
+    "github.com/euskadi31/zerolog-ecs"
+    ecsaws "github.com/euskadi31/zerolog-ecs/feature/aws"
 )
 
 func main() {
+    zerologecs.Configure(zerologecs.WithServiceName("hello-bin"))
+    ecsaws.Configure()
+
     log.Info().Msg("hello")
 }
 

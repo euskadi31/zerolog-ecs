@@ -4,22 +4,43 @@ import (
 	"context"
 	"io"
 
-	"github.com/aws/aws-sdk-go-v2/config"
+	awssdk "github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/rs/zerolog/log"
 )
 
-func init() {
+type Option func(*config)
+
+type config struct {
+	cfg awssdk.Config
+}
+
+func WithAWSConfig(cfg awssdk.Config) Option {
+	return func(c *config) {
+		c.cfg = cfg
+	}
+}
+
+func Configure(opts ...Option) {
 	ctx := context.Background()
 
-	cfg, err := config.LoadDefaultConfig(ctx)
+	awscfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("aws load default config failed")
 
 		return
 	}
 
-	client := imds.NewFromConfig(cfg)
+	cfg := &config{
+		cfg: awscfg,
+	}
+
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
+	client := imds.NewFromConfig(cfg.cfg)
 
 	zlc := log.With().
 		Str("cloud.provider", "aws")
