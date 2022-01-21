@@ -8,77 +8,8 @@ on:
     branches: [ develop ]
 
 jobs:
-  change:
-    name: Check where are changes ?
-    outputs:
-      change-angular: ${{ steps.change-angular.outputs.changed }}
-      change-golang: ${{ steps.change-golang.outputs.changed }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 100
-
-      - uses: marceloprado/has-changed-path@v1
-        id: change-angular
-        with:
-          paths: cmd/hypershop-manager/*
-
-      - uses: marceloprado/has-changed-path@v1
-        id: change-golang
-        with:
-          paths: cmd/hypershop-api/* cmd/hypershop-builder/* pkg/* go.mod go.sum .golangci.yml
-
-
-  build-angular:
+  build:
     needs: ["change"]
-    if: ${{ needs.change.outputs.change-angular == 'true' }}
-    name: "[Angular] Build & Test"
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.x]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install Dependencies
-        working-directory: ./cmd/hypershop-manager
-        run: npm install
-
-      - name: Run Linter
-        working-directory: ./cmd/hypershop-manager
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Build Application
-        working-directory: ./cmd/hypershop-manager
-        run: npm run build
-
-      - name: List Files in Distribution Directory
-        working-directory: ./cmd/hypershop-manager
-        run: ls -R ./dist
-
-
-
-  build-golang:
-    needs: ["change"]
-    if: ${{ needs.change.outputs.change-golang == 'true' }}
     name: "[Go] Build & Test"
     runs-on: ubuntu-latest
     steps:
