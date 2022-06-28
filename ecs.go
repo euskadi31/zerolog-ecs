@@ -19,10 +19,18 @@ const Version = "1.12"
 type Option func(*config)
 
 type config struct {
+	logger zerolog.Logger
+
 	serviceName    string
 	serviceType    string
 	serviceEnv     string
 	serviceVersion string
+}
+
+func WithLogger(logger zerolog.Logger) Option {
+	return func(c *config) {
+		c.logger = logger
+	}
 }
 
 func WithServiceName(name string) Option {
@@ -49,9 +57,10 @@ func WithServiceVersion(version string) Option {
 	}
 }
 
-func Configure(opts ...Option) {
+func Configure(opts ...Option) zerolog.Logger {
 	cfg := &config{
 		serviceName: filepath.Base(os.Args[0]),
+		logger:      log.Logger,
 	}
 
 	for _, opt := range opts {
@@ -70,7 +79,7 @@ func Configure(opts ...Option) {
 		return time.Now().UTC()
 	}
 
-	zlc := log.With().
+	zlc := cfg.logger.With().
 		Str("ecs.version", Version).
 		Str("service.name", cfg.serviceName).
 		Str("process.executable", os.Args[0]).
@@ -104,4 +113,6 @@ func Configure(opts ...Option) {
 	}
 
 	log.Logger = zlc.Logger()
+
+	return zlc.Logger()
 }

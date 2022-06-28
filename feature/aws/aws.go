@@ -7,13 +7,22 @@ import (
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type Option func(*config)
 
 type config struct {
+	logger zerolog.Logger
+
 	cfg awssdk.Config
+}
+
+func WithLogger(logger zerolog.Logger) Option {
+	return func(c *config) {
+		c.logger = logger
+	}
 }
 
 func WithAWSConfig(cfg awssdk.Config) Option {
@@ -22,18 +31,25 @@ func WithAWSConfig(cfg awssdk.Config) Option {
 	}
 }
 
-func Configure(opts ...Option) {
+func ToLogger(logger zerolog.Logger, opts ...Option) zerolog.Logger {
+	return logger
+}
+
+func Configure(opts ...Option) zerolog.Logger {
 	ctx := context.Background()
+
+	logger := log.Logger
 
 	awscfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("aws load default config failed")
 
-		return
+		return logger
 	}
 
 	cfg := &config{
-		cfg: awscfg,
+		cfg:    awscfg,
+		logger: logger,
 	}
 
 	for _, opt := range opts {
@@ -42,7 +58,7 @@ func Configure(opts ...Option) {
 
 	client := imds.NewFromConfig(cfg.cfg)
 
-	zlc := log.With().
+	zlc := cfg.logger.With().
 		Str("cloud.provider", "aws")
 
 	{
@@ -52,14 +68,14 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get metadata failed")
 
-			return
+			return cfg.logger
 		}
 
 		b, err := io.ReadAll(output.Content)
 		if err != nil {
 			log.Error().Err(err).Msg("aws read metadata content failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Str("cloud.instance.id", string(b))
@@ -70,7 +86,7 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get region failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Str("cloud.region", region.Region)
@@ -83,14 +99,14 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get metadata failed")
 
-			return
+			return cfg.logger
 		}
 
 		b, err := io.ReadAll(output.Content)
 		if err != nil {
 			log.Error().Err(err).Msg("aws read metadata content failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Str("cloud.instance.name", string(b))
@@ -103,14 +119,14 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get metadata failed")
 
-			return
+			return cfg.logger
 		}
 
 		b, err := io.ReadAll(output.Content)
 		if err != nil {
 			log.Error().Err(err).Msg("aws read metadata content failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Str("cloud.availability_zone", string(b))
@@ -123,14 +139,14 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get metadata failed")
 
-			return
+			return cfg.logger
 		}
 
 		b, err := io.ReadAll(output.Content)
 		if err != nil {
 			log.Error().Err(err).Msg("aws read metadata content failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Str("cloud.machine.type", string(b))
@@ -143,18 +159,20 @@ func Configure(opts ...Option) {
 		if err != nil {
 			log.Error().Err(err).Msg("aws get metadata failed")
 
-			return
+			return cfg.logger
 		}
 
 		b, err := io.ReadAll(output.Content)
 		if err != nil {
 			log.Error().Err(err).Msg("aws read metadata content failed")
 
-			return
+			return cfg.logger
 		}
 
 		zlc = zlc.Strs("host.ip", []string{string(b)})
 	}
 
 	log.Logger = zlc.Logger()
+
+	return cfg.logger
 }
