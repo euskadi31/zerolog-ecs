@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    needs: ["change"]
     name: "[Go] Build & Test"
     runs-on: ubuntu-latest
     steps:
