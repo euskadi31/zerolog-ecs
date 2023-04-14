@@ -48,7 +48,7 @@ jobs:
         cat coverage.txt >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
 
-    - uses: actions/github-script@v4
+    - uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
       env:
         COVERAGE_CONTENT: "${{ env.COVERAGE_CONTENT }}"
@@ -104,7 +104,7 @@ jobs:
         cat benchmark.txt >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
 
-    - uses: actions/github-script@v4
+    - uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
       env:
         BENCHMARK_CONTENT: "${{ env.BENCHMARK_CONTENT }}"
