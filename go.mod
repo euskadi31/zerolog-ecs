@@ -2,7 +2,7 @@ module github.com/euskadi31/zerolog-ecs
 
 go 1.23
 
-require github.com/rs/zerolog v1.35.0
+require github.com/rs/zerolog v1.35.1
 
 require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
